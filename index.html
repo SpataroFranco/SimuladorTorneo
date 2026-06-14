@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Torneo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap');
+  :root {
+    --bg:#0d1117;--surface:#161b22;--surface2:#1c2330;--border:#30363d;
+    --green:#2ea043;--green-glow:#39d353;--gold:#e3b341;--text:#e6edf3;
+    --muted:#7d8590;--win:#2ea043;--draw:#e3b341;--loss:#f85149;
+    --pro-accent:#388bfd;--am-accent:#bc8cff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh}
+  header{background:var(--surface);border-bottom:2px solid var(--green);padding:14px 24px;display:flex;align-items:center;gap:14px}
+  .logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;letter-spacing:1px;color:var(--green-glow);text-transform:uppercase;line-height:1}
+  .logo span{color:var(--text)}
+  .subtitle{color:var(--muted);font-size:12px;margin-top:2px}
+  .main{max-width:1200px;margin:0 auto;padding:20px;display:grid;grid-template-columns:340px 1fr;gap:16px}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .panel-header{background:var(--surface2);padding:10px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+  .panel-body{padding:14px}
+  .config-section{margin-bottom:16px}
+  .config-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:7px}
+  .team-type-toggle{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .toggle-btn{flex:1;padding:7px;background:none;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;text-transform:uppercase}
+  .toggle-btn.active-pro{background:var(--pro-accent);color:white}
+  .toggle-btn.active-am{background:var(--am-accent);color:white}
+  input[type="text"]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 11px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+  input[type="text"]:focus{border-color:var(--green)}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+  .stat-field label{display:block;font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+  .slider-wrap{display:flex;align-items:center;gap:6px}
+  input[type="range"]{flex:1;accent-color:var(--green);height:4px;cursor:pointer}
+  .slider-val{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--green-glow);width:26px;text-align:right}
+  .btn{width:100%;padding:10px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:all .2s}
+  .btn-primary{background:var(--green);color:white}
+  .btn-primary:hover{background:var(--green-glow)}
+  .btn-primary:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+  .btn-danger{background:transparent;border:1px solid var(--loss);color:var(--loss);margin-top:7px}
+  .btn-danger:hover{background:var(--loss);color:white}
+  .btn-sim{background:var(--gold);color:#0d1117;font-size:16px}
+  .btn-sim:hover{filter:brightness(1.1)}
+  .btn-sim:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+  .team-list{max-height:240px;overflow-y:auto}
+  .team-item{display:flex;align-items:center;gap:9px;padding:7px 12px;border-bottom:1px solid var(--border);font-size:13px;transition:background .15s}
+  .team-item:last-child{border-bottom:none}
+  .team-item:hover{background:var(--surface2)}
+  .escudo-wrap{width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .team-name{flex:1;font-weight:500;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .team-type-label{font-size:9px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;padding:2px 5px;border-radius:3px;flex-shrink:0}
+  .label-pro{background:rgba(56,139,253,.15);color:var(--pro-accent)}
+  .label-am{background:rgba(188,140,255,.15);color:var(--am-accent)}
+  .remove-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;transition:color .15s;flex-shrink:0}
+  .remove-btn:hover{color:var(--loss)}
+  .right-col{display:flex;flex-direction:column;gap:16px}
+  .tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface2)}
+  .tab-btn{padding:9px 16px;background:none;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+  .tab-btn.active{color:var(--green-glow);border-bottom-color:var(--green-glow)}
+  .tab-content{display:none;padding:14px}
+  .tab-content.active{display:block}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:5px 7px;text-align:center;border-bottom:1px solid var(--border)}
+  th.left{text-align:left}
+  td{padding:6px 7px;text-align:center;border-bottom:1px solid rgba(48,54,61,.5);vertical-align:middle}
+  td.left{text-align:left}
+  tr:hover td{background:rgba(255,255,255,.025)}
+  .pos-num{font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--muted);font-size:13px}
+  tr:nth-child(1) .pos-num,tr:nth-child(2) .pos-num,tr:nth-child(3) .pos-num{color:var(--gold)}
+  .pts-cell{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:15px}
+  tr:nth-child(1) .pts-cell{color:var(--gold)}
+  .dg-pos{color:var(--win)}.dg-neg{color:var(--loss)}.dg-zero{color:var(--muted)}
+  .log-container{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;font-family:monospace;font-size:12px;max-height:420px;overflow-y:auto;line-height:1.6}
+  .log-fecha{color:var(--gold);font-weight:bold;margin:8px 0 3px}
+  .log-partido{color:var(--muted)}
+  .log-resultado{color:var(--text)}
+  .log-win{color:var(--win)}
+  .log-campeon{color:var(--gold);font-size:13px;font-weight:bold;margin-top:10px;padding:8px;border:1px solid var(--gold);border-radius:4px;text-align:center}
+  .progress-bar{height:3px;background:var(--border);border-radius:2px;margin:10px 0;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green-glow));border-radius:2px;width:0%;transition:width .3s}
+  .status-text{font-size:11px;color:var(--muted);text-align:center;min-height:16px}
+  .champion-card{display:none;background:linear-gradient(135deg,rgba(227,179,65,.1),rgba(227,179,65,.04));border:1px solid var(--gold);border-radius:8px;padding:18px;text-align:center;margin-top:14px;align-items:center;gap:14px}
+  .champion-card.show{display:flex}
+  .champion-text{flex:1;text-align:left}
+  .champion-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:4px}
+  .champion-name{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--text);line-height:1}
+  .champion-stats{font-size:12px;color:var(--muted);margin-top:4px}
+  .empty-state{text-align:center;padding:36px 20px;color:var(--muted)}
+  .empty-state .big{font-size:36px;margin-bottom:8px}
+  .empty-state p{font-size:12px}
+  .count-badge{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1px 7px;font-size:10px;color:var(--muted);margin-left:auto}
+  .count-badge.ok{border-color:var(--green);color:var(--green-glow)}
+  .warning-text{font-size:10px;color:var(--gold);margin-top:5px;text-align:center}
+  .sim-btn-wrap{padding:14px;border-top:1px solid var(--border)}
+  .team-name-cell{display:flex;align-items:center;gap:6px}
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:var(--surface)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<header>
+  <svg width="36" height="36" viewBox="0 0 36 36">
+    <polygon points="18,2 34,10 34,26 18,34 2,26 2,10" fill="#39d353" opacity="0.15" stroke="#39d353" stroke-width="1.5"/>
+    <text x="18" y="23" text-anchor="middle" font-size="13" font-weight="bold" fill="#39d353" font-family="sans-serif">⚽</text>
+  </svg>
+  <div>
+    <div class="logo">Simulador <span>Torneo</span></div>
+    <div class="subtitle">Liga Profesional Argentina · Laboratorio de Computación 2</div>
+  </div>
+</header>
+
+<div class="main">
+  <div>
+    <div class="panel">
+      <div class="panel-header">⚙ Agrega tu equipo</div>
+      <div class="panel-body">
+        <div class="config-section">
+          <div class="config-label">Tipo</div>
+          <div class="team-type-toggle">
+            <button class="toggle-btn active-pro" id="btn-pro" onclick="setType('profesional')">Profesional</button>
+            <button class="toggle-btn" id="btn-am" onclick="setType('amateur')">Amateur</button>
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="config-label">Nombre del club</div>
+          <input type="text" id="inp-nombre" placeholder="Ej: Club Atlético XYZ" maxlength="30">
+        </div>
+        <div class="stat-grid">
+          <div class="stat-field"><label>Ataque</label><div class="slider-wrap"><input type="range" min="0" max="100" value="70" id="sl-ataque" oninput="updateVal('ataque',this.value)"><span class="slider-val" id="val-ataque">70</span></div></div>
+          <div class="stat-field"><label>Defensa</label><div class="slider-wrap"><input type="range" min="0" max="100" value="65" id="sl-defensa" oninput="updateVal('defensa',this.value)"><span class="slider-val" id="val-defensa">65</span></div></div>
+          <div class="stat-field"><label>Resistencia</label><div class="slider-wrap"><input type="range" min="0" max="100" value="70" id="sl-resistencia" oninput="updateVal('resistencia',this.value)"><span class="slider-val" id="val-resistencia">70</span></div></div>
+          <div class="stat-field"><label id="extra-label">Nivel Entrenamiento</label><div class="slider-wrap"><input type="range" min="0" max="100" value="80" id="sl-extra" oninput="updateVal('extra',this.value)"><span class="slider-val" id="val-extra">80</span></div></div>
+          <div class="stat-field"><label>Ranking</label><div class="slider-wrap"><input type="range" min="1" max="100" value="50" id="sl-ranking" oninput="updateVal('ranking',this.value)"><span class="slider-val" id="val-ranking">50</span></div></div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary" onclick="agregarEquipo()">+ Agregar al torneo</button>
+        </div>
+        <div id="add-error" style="font-size:11px;color:var(--loss);margin-top:5px;min-height:14px;"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="panel-header">👥 Equipos en el torneo <span class="count-badge" id="count-badge">0</span></div>
+      <div class="team-list" id="team-list"></div>
+      <div style="padding:10px 12px">
+        <div class="warning-text" id="odd-warning" style="display:none">⚠ Cantidad impar — se eliminará un equipo automáticamente</div>
+        <button class="btn btn-danger" onclick="limpiarTodo()">Limpiar todo</button>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="sim-btn-wrap">
+        <div class="status-text" id="status-text">Cargando...</div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <button class="btn btn-sim" id="btn-sim" onclick="simular()" disabled>▶ Simular Torneo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-col">
+    <div class="panel" style="flex:1">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('tabla',this)">Tabla</button>
+        <button class="tab-btn" onclick="showTab('log',this)">Partidos</button>
+        <button class="tab-btn" onclick="showTab('stats',this)">Estadísticas</button>
+      </div>
+      <div class="tab-content active" id="tab-tabla">
+        <div id="tabla-content"><div class="empty-state"><div class="big">📊</div><p>Simulá el torneo para ver la tabla</p></div></div>
+        <div class="champion-card" id="champion-card">
+          <div id="champion-escudo-wrap"></div>
+          <div class="champion-text">
+            <div class="champion-label">🏆 Campeón del Torneo</div>
+            <div class="champion-name" id="champion-name">—</div>
+            <div class="champion-stats" id="champion-stats"></div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-content" id="tab-log">
+        <div class="log-container" id="log-container"><span style="color:var(--muted)">Los resultados aparecerán aquí...</span></div>
+      </div>
+      <div class="tab-content" id="tab-stats">
+        <div id="stats-content"><div class="empty-state"><div class="big">📈</div><p>Las estadísticas aparecerán luego de simular</p></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ ESCUDOS SVG EMBEBIDOS ============
+// Cada escudo es un SVG inline con los colores reales del club
+const ESCUDOS_SVG = {
+  'River Plate': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#fff" stroke="#e30613" stroke-width="2"/>
+    <rect x="2" y="17" width="36" height="6" fill="#e30613"/>
+    <text x="20" y="15" text-anchor="middle" font-size="7" font-weight="bold" fill="#e30613" font-family="sans-serif">RIVER</text>
+    <text x="20" y="32" text-anchor="middle" font-size="5" font-weight="bold" fill="#e30613" font-family="sans-serif">PLATE</text>
+  </svg>`,
+
+  'Boca Juniors': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#00308F" stroke="#F5D130" stroke-width="2"/>
+    <rect x="2" y="15" width="36" height="4" fill="#F5D130"/>
+    <rect x="2" y="21" width="36" height="4" fill="#F5D130"/>
+    <text x="20" y="14" text-anchor="middle" font-size="6" font-weight="bold" fill="#F5D130" font-family="sans-serif">BOCA</text>
+    <text x="20" y="35" text-anchor="middle" font-size="5" font-weight="bold" fill="#F5D130" font-family="sans-serif">JUNIORS</text>
+  </svg>`,
+
+  'Racing Club': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#fff" stroke="#23A2D9" stroke-width="2"/>
+    <rect x="10" y="2" width="6" height="36" fill="#23A2D9"/>
+    <rect x="24" y="2" width="6" height="36" fill="#23A2D9"/>
+    <text x="20" y="22" text-anchor="middle" font-size="6" font-weight="bold" fill="#23A2D9" font-family="sans-serif">RC</text>
+  </svg>`,
+
+  'Independiente': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#E30613" stroke="#8B0000" stroke-width="2"/>
+    <text x="20" y="18" text-anchor="middle" font-size="6" font-weight="bold" fill="#fff" font-family="sans-serif">IND</text>
+    <text x="20" y="28" text-anchor="middle" font-size="5" font-weight="bold" fill="#fff" font-family="sans-serif">ROJO</text>
+  </svg>`,
+
+  'San Lorenzo': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#00529B" stroke="#E30613" stroke-width="2"/>
+    <rect x="2" y="11" width="36" height="5" fill="#E30613"/>
+    <rect x="2" y="24" width="36" height="5" fill="#E30613"/>
+    <text x="20" y="22" text-anchor="middle" font-size="7" font-weight="bold" fill="#fff" font-family="sans-serif">SL</text>
+  </svg>`,
+
+  'Huracán': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#fff" stroke="#333" stroke-width="1.5"/>
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="none" stroke="#333" stroke-width="1.5"/>
+    <rect x="2" y="11" width="17" height="18" fill="#333"/>
+    <text x="20" y="22" text-anchor="middle" font-size="7" font-weight="bold" fill="#e30613" font-family="sans-serif">HU</text>
+  </svg>`,
+
+  'Estudiantes (LP)': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#fff" stroke="#E30613" stroke-width="2"/>
+    <polygon points="20,6 35,13 35,27 20,34 5,27 5,13" fill="#E30613"/>
+    <text x="20" y="23" text-anchor="middle" font-size="8" font-weight="bold" fill="#fff" font-family="sans-serif">ELP</text>
+  </svg>`,
+
+  'Gimnasia (LP)': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#005BBB" stroke="#fff" stroke-width="2"/>
+    <rect x="15" y="2" width="10" height="36" fill="#fff"/>
+    <text x="20" y="23" text-anchor="middle" font-size="6" font-weight="bold" fill="#005BBB" font-family="sans-serif">GELP</text>
+  </svg>`,
+
+  'Vélez Sarsfield': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#005BBB" stroke="#FFD700" stroke-width="2"/>
+    <text x="20" y="18" text-anchor="middle" font-size="8" font-weight="bold" fill="#FFD700" font-family="sans-serif">VÉ</text>
+    <text x="20" y="29" text-anchor="middle" font-size="6" font-weight="bold" fill="#fff" font-family="sans-serif">LEZ</text>
+  </svg>`,
+
+  'Talleres (C)': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#fff" stroke="#0057A8" stroke-width="2"/>
+    <rect x="2" y="11" width="36" height="18" fill="#0057A8"/>
+    <text x="20" y="23" text-anchor="middle" font-size="8" font-weight="bold" fill="#fff" font-family="sans-serif">TAL</text>
+  </svg>`,
+
+  'Rosario Central': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#FFD700" stroke="#00529B" stroke-width="2"/>
+    <polygon points="20,6 35,13 35,27 20,34 5,27 5,13" fill="#00529B"/>
+    <text x="20" y="23" text-anchor="middle" font-size="8" font-weight="bold" fill="#FFD700" font-family="sans-serif">RC</text>
+  </svg>`,
+
+  "Newell's Old Boys": (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#E30613" stroke="#000" stroke-width="1.5"/>
+    <rect x="2" y="17" width="36" height="6" fill="#000"/>
+    <text x="20" y="14" text-anchor="middle" font-size="6" font-weight="bold" fill="#fff" font-family="sans-serif">NOB</text>
+    <text x="20" y="31" text-anchor="middle" font-size="5" font-weight="bold" fill="#fff" font-family="sans-serif">NOB</text>
+  </svg>`,
+
+  'Argentinos Juniors': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#E30613" stroke="#E30613" stroke-width="1.5"/>
+    <rect x="8" y="2" width="8" height="36" fill="#fff"/>
+    <rect x="24" y="2" width="8" height="36" fill="#fff"/>
+    <text x="20" y="23" text-anchor="middle" font-size="7" font-weight="bold" fill="#E30613" font-family="sans-serif">AJ</text>
+  </svg>`,
+
+  'Lanús': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#006A4E" stroke="#006A4E" stroke-width="1.5"/>
+    <polygon points="20,6 35,13 35,27 20,34 5,27 5,13" fill="#E30613"/>
+    <text x="20" y="23" text-anchor="middle" font-size="8" font-weight="bold" fill="#fff" font-family="sans-serif">GRA</text>
+  </svg>`,
+
+  'Banfield': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#006A4E" stroke="#006A4E" stroke-width="1.5"/>
+    <text x="20" y="18" text-anchor="middle" font-size="6" font-weight="bold" fill="#fff" font-family="sans-serif">BAN</text>
+    <text x="20" y="29" text-anchor="middle" font-size="5" font-weight="bold" fill="#fff" font-family="sans-serif">FIELD</text>
+  </svg>`,
+
+  'Godoy Cruz': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#00529B" stroke="#E30613" stroke-width="2"/>
+    <rect x="2" y="11" width="36" height="18" fill="#E30613"/>
+    <text x="20" y="23" text-anchor="middle" font-size="7" font-weight="bold" fill="#fff" font-family="sans-serif">GCH</text>
+  </svg>`,
+
+  'Atlético Tucumán': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#003087" stroke="#003087" stroke-width="1.5"/>
+    <rect x="2" y="17" width="36" height="6" fill="#fff"/>
+    <text x="20" y="14" text-anchor="middle" font-size="5" font-weight="bold" fill="#fff" font-family="sans-serif">ATL</text>
+    <text x="20" y="32" text-anchor="middle" font-size="5" font-weight="bold" fill="#fff" font-family="sans-serif">TUC</text>
+  </svg>`,
+
+  'Tigre': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#E30613" stroke="#000" stroke-width="1.5"/>
+    <rect x="2" y="17" width="36" height="6" fill="#000"/>
+    <text x="20" y="14" text-anchor="middle" font-size="6" font-weight="bold" fill="#fff" font-family="sans-serif">TIG</text>
+    <text x="20" y="31" text-anchor="middle" font-size="6" font-weight="bold" fill="#fff" font-family="sans-serif">RE</text>
+  </svg>`,
+
+  'Platense': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#fff" stroke="#1E3A5F" stroke-width="2"/>
+    <polygon points="20,6 35,13 35,27 20,34 5,27 5,13" fill="#1E3A5F"/>
+    <text x="20" y="23" text-anchor="middle" font-size="8" font-weight="bold" fill="#fff" font-family="sans-serif">PLA</text>
+  </svg>`,
+
+  'Defensa y Justicia': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#FFD700" stroke="#000" stroke-width="1.5"/>
+    <polygon points="20,6 35,13 35,27 20,34 5,27 5,13" fill="#000"/>
+    <text x="20" y="23" text-anchor="middle" font-size="7" font-weight="bold" fill="#FFD700" font-family="sans-serif">DYJ</text>
+  </svg>`,
+
+  'Belgrano': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#005BBB" stroke="#005BBB" stroke-width="1.5"/>
+    <rect x="2" y="11" width="17" height="18" fill="#fff"/>
+    <text x="20" y="23" text-anchor="middle" font-size="6" font-weight="bold" fill="#005BBB" font-family="sans-serif">BEL</text>
+  </svg>`,
+
+  'Instituto': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#E30613" stroke="#E30613" stroke-width="1.5"/>
+    <text x="20" y="18" text-anchor="middle" font-size="8" font-weight="bold" fill="#fff" font-family="sans-serif">IN</text>
+    <text x="20" y="29" text-anchor="middle" font-size="8" font-weight="bold" fill="#fff" font-family="sans-serif">ST</text>
+  </svg>`,
+
+  'Unión': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#E30613" stroke="#000" stroke-width="1.5"/>
+    <rect x="14" y="2" width="12" height="36" fill="#fff"/>
+    <text x="20" y="23" text-anchor="middle" font-size="6" font-weight="bold" fill="#E30613" font-family="sans-serif">UNI</text>
+  </svg>`,
+
+  'Barracas Central': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#8B0000" stroke="#FFD700" stroke-width="2"/>
+    <text x="20" y="18" text-anchor="middle" font-size="6" font-weight="bold" fill="#FFD700" font-family="sans-serif">BC</text>
+    <text x="20" y="29" text-anchor="middle" font-size="5" font-weight="bold" fill="#fff" font-family="sans-serif">BCAL</text>
+  </svg>`,
+
+  'Sarmiento (J)': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#006A4E" stroke="#006A4E" stroke-width="1.5"/>
+    <rect x="2" y="17" width="36" height="6" fill="#FFD700"/>
+    <text x="20" y="14" text-anchor="middle" font-size="5" font-weight="bold" fill="#FFD700" font-family="sans-serif">SAR</text>
+    <text x="20" y="32" text-anchor="middle" font-size="5" font-weight="bold" fill="#FFD700" font-family="sans-serif">MIE</text>
+  </svg>`,
+
+  'Central Córdoba (SdE)': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#005BBB" stroke="#E30613" stroke-width="2"/>
+    <rect x="2" y="17" width="36" height="6" fill="#E30613"/>
+    <text x="20" y="14" text-anchor="middle" font-size="5" font-weight="bold" fill="#fff" font-family="sans-serif">CEN</text>
+    <text x="20" y="32" text-anchor="middle" font-size="5" font-weight="bold" fill="#fff" font-family="sans-serif">CBA</text>
+  </svg>`,
+
+  'Ind. Rivadavia': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#E30613" stroke="#004A97" stroke-width="2"/>
+    <rect x="2" y="17" width="36" height="6" fill="#004A97"/>
+    <text x="20" y="14" text-anchor="middle" font-size="6" font-weight="bold" fill="#fff" font-family="sans-serif">IND</text>
+    <text x="20" y="32" text-anchor="middle" font-size="5" font-weight="bold" fill="#fff" font-family="sans-serif">RIV</text>
+  </svg>`,
+
+  'Dep. Riestra': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#fff" stroke="#333" stroke-width="1.5"/>
+    <rect x="2" y="11" width="36" height="18" fill="#1a1a2e"/>
+    <text x="20" y="23" text-anchor="middle" font-size="6" font-weight="bold" fill="#fff" font-family="sans-serif">RIE</text>
+  </svg>`,
+
+  'Aldosivi': (s) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="#004A97" stroke="#FFD700" stroke-width="2"/>
+    <polygon points="20,6 35,13 35,27 20,34 5,27 5,13" fill="#FFD700"/>
+    <text x="20" y="23" text-anchor="middle" font-size="6" font-weight="bold" fill="#004A97" font-family="sans-serif">ALT</text>
+  </svg>`,
+};
+
+function escudoSVG(nombre, size=28) {
+  if (ESCUDOS_SVG[nombre]) return ESCUDOS_SVG[nombre](size);
+  // Genérico con iniciales y color único
+  const colors = ['#388bfd','#bc8cff','#f0883e','#39d353','#e3b341','#f85149','#58a6ff','#ff7b72'];
+  let h = 0; for (let c of nombre) h = (h*31 + c.charCodeAt(0)) & 0xffff;
+  const col = colors[h % colors.length];
+  const ini = nombre.split(' ').filter(w=>w.length>2).slice(0,2).map(w=>w[0].toUpperCase()).join('') || nombre.slice(0,2).toUpperCase();
+  return `<svg width="${size}" height="${size}" viewBox="0 0 40 40">
+    <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="${col}" opacity="0.2" stroke="${col}" stroke-width="2"/>
+    <text x="20" y="24" text-anchor="middle" font-size="11" font-weight="bold" fill="${col}" font-family="Barlow Condensed,sans-serif">${ini}</text>
+  </svg>`;
+}
+
+// ============ DATOS 29 EQUIPOS ============
+const LIGA_ARG = [
+  {nombre:'River Plate',         tipo:'profesional',ranking:98,ataque:90,defensa:87,resistencia:88,extra:92},
+  {nombre:'Boca Juniors',        tipo:'profesional',ranking:96,ataque:88,defensa:85,resistencia:86,extra:90},
+  {nombre:'Racing Club',         tipo:'profesional',ranking:90,ataque:84,defensa:82,resistencia:83,extra:86},
+  {nombre:'Independiente',       tipo:'profesional',ranking:88,ataque:82,defensa:80,resistencia:81,extra:84},
+  {nombre:'San Lorenzo',         tipo:'profesional',ranking:85,ataque:79,defensa:77,resistencia:78,extra:81},
+  {nombre:'Huracán',             tipo:'profesional',ranking:78,ataque:75,defensa:73,resistencia:75,extra:77},
+  {nombre:'Estudiantes (LP)',    tipo:'profesional',ranking:82,ataque:78,defensa:80,resistencia:79,extra:82},
+  {nombre:'Gimnasia (LP)',       tipo:'profesional',ranking:72,ataque:70,defensa:72,resistencia:71,extra:73},
+  {nombre:'Vélez Sarsfield',     tipo:'profesional',ranking:84,ataque:80,defensa:78,resistencia:79,extra:83},
+  {nombre:'Talleres (C)',        tipo:'profesional',ranking:80,ataque:77,defensa:76,resistencia:77,extra:79},
+  {nombre:'Rosario Central',     tipo:'profesional',ranking:76,ataque:74,defensa:73,resistencia:74,extra:76},
+  {nombre:"Newell's Old Boys",   tipo:'profesional',ranking:74,ataque:72,defensa:71,resistencia:72,extra:74},
+  {nombre:'Argentinos Juniors',  tipo:'profesional',ranking:73,ataque:73,defensa:70,resistencia:72,extra:75},
+  {nombre:'Lanús',               tipo:'profesional',ranking:71,ataque:71,defensa:70,resistencia:71,extra:72},
+  {nombre:'Banfield',            tipo:'amateur',    ranking:68,ataque:67,defensa:67,resistencia:68,extra:70},
+  {nombre:'Godoy Cruz',          tipo:'profesional',ranking:70,ataque:69,defensa:70,resistencia:70,extra:71},
+  {nombre:'Atlético Tucumán',    tipo:'profesional',ranking:69,ataque:70,defensa:68,resistencia:69,extra:70},
+  {nombre:'Tigre',               tipo:'amateur',    ranking:66,ataque:66,defensa:65,resistencia:67,extra:68},
+  {nombre:'Platense',            tipo:'amateur',    ranking:64,ataque:64,defensa:64,resistencia:65,extra:66},
+  {nombre:'Defensa y Justicia',  tipo:'profesional',ranking:67,ataque:67,defensa:66,resistencia:67,extra:69},
+  {nombre:'Belgrano',            tipo:'profesional',ranking:65,ataque:65,defensa:65,resistencia:65,extra:67},
+  {nombre:'Instituto',           tipo:'amateur',    ranking:60,ataque:62,defensa:61,resistencia:62,extra:63},
+  {nombre:'Unión',               tipo:'amateur',    ranking:63,ataque:63,defensa:63,resistencia:63,extra:65},
+  {nombre:'Barracas Central',    tipo:'amateur',    ranking:58,ataque:60,defensa:60,resistencia:61,extra:62},
+  {nombre:'Sarmiento (J)',       tipo:'amateur',    ranking:57,ataque:59,defensa:59,resistencia:60,extra:61},
+  {nombre:'Central Córdoba (SdE)',tipo:'amateur',   ranking:62,ataque:63,defensa:62,resistencia:63,extra:64},
+  {nombre:'Ind. Rivadavia',      tipo:'amateur',    ranking:55,ataque:58,defensa:57,resistencia:58,extra:59},
+  {nombre:'Dep. Riestra',        tipo:'amateur',    ranking:53,ataque:56,defensa:56,resistencia:57,extra:57},
+  {nombre:'Aldosivi',            tipo:'amateur',    ranking:50,ataque:55,defensa:54,resistencia:55,extra:55},
+];
+
+// ============ ESTADO ============
+let equiposTorneo = [];
+let tipoActual = 'profesional';
+let simulando = false;
+
+LIGA_ARG.forEach(e => equiposTorneo.push({...e, id:Date.now()+Math.random(), victorias:0,empates:0,derrotas:0,goles_favor:0,goles_contra:0}));
+renderTeamList();
+
+// ============ UI ============
+function setType(tipo) {
+  tipoActual = tipo;
+  document.getElementById('btn-pro').className = 'toggle-btn'+(tipo==='profesional'?' active-pro':'');
+  document.getElementById('btn-am').className = 'toggle-btn'+(tipo==='amateur'?' active-am':'');
+  document.getElementById('extra-label').textContent = tipo==='profesional'?'Nivel Entrenamiento':'Estado Físico';
+}
+function updateVal(c,v){document.getElementById('val-'+c).textContent=v}
+
+function agregarEquipo() {
+  const nombre = document.getElementById('inp-nombre').value.trim();
+  const errEl = document.getElementById('add-error');
+  if (!nombre){errEl.textContent='Ingresá un nombre';return}
+  if (equiposTorneo.find(e=>e.nombre.toLowerCase()===nombre.toLowerCase())){errEl.textContent='Ya existe ese equipo';return}
+  errEl.textContent='';
+  equiposTorneo.push({
+    id:Date.now()+Math.random(), nombre, tipo:tipoActual,
+    ranking:+document.getElementById('sl-ranking').value,
+    ataque:+document.getElementById('sl-ataque').value,
+    defensa:+document.getElementById('sl-defensa').value,
+    resistencia:+document.getElementById('sl-resistencia').value,
+    extra:+document.getElementById('sl-extra').value,
+    victorias:0,empates:0,derrotas:0,goles_favor:0,goles_contra:0
+  });
+  document.getElementById('inp-nombre').value='';
+  renderTeamList();
+}
+
+function removeEquipo(id){equiposTorneo=equiposTorneo.filter(e=>e.id!==id);renderTeamList()}
+function limpiarTodo(){equiposTorneo=[];renderTeamList();resetResults()}
+
+function renderTeamList() {
+  const list = document.getElementById('team-list');
+  const n = equiposTorneo.length;
+  document.getElementById('count-badge').textContent = n;
+  document.getElementById('count-badge').className = 'count-badge'+(n>=2?' ok':'');
+  document.getElementById('btn-sim').disabled = n<2||simulando;
+  document.getElementById('odd-warning').style.display = n%2!==0&&n>0?'block':'none';
+  document.getElementById('status-text').textContent = n>=2?`${n} equipos listos`:'Agregá al menos 2 equipos';
+
+  if(n===0){list.innerHTML='<div class="empty-state" style="padding:20px"><div class="big">🏟</div><p>Agregá equipos</p></div>';return}
+
+  list.innerHTML = equiposTorneo.map(e=>`
+    <div class="team-item">
+      <div class="escudo-wrap">${escudoSVG(e.nombre,26)}</div>
+      <span class="team-name">${e.nombre}</span>
+      <span class="team-type-label ${e.tipo==='profesional'?'label-pro':'label-am'}">${e.tipo==='profesional'?'PRO':'AM'}</span>
+      <button class="remove-btn" onclick="removeEquipo(${e.id})">×</button>
+    </div>
+  `).join('');
+}
+
+// ============ SIMULACIÓN ============
+function calcularPotencia(e) {
+  let base,factor;
+  if(e.tipo==='profesional'){base=e.ataque*.30+e.defensa*.25+e.resistencia*.20+e.extra*.25;factor=.9+Math.random()*.2}
+  else{base=e.ataque*.25+e.defensa*.20+e.resistencia*.20+e.extra*.35;factor=.8+Math.random()*.4}
+  return base*factor;
+}
+function jugarPartido(local,visitante){
+  let pl=calcularPotencia(local)*1.05,pv=calcularPotencia(visitante);
+  const diff=pl-pv;
+  let gl=rnd(0,2),gv=rnd(0,2);
+  if(diff>15)gl+=rnd(1,3);else if(diff>5)gl+=rnd(0,2);else if(diff<-15)gv+=rnd(1,3);else if(diff<-5)gv+=rnd(0,2);
+  local.goles_favor+=gl;local.goles_contra+=gv;visitante.goles_favor+=gv;visitante.goles_contra+=gl;
+  if(gl>gv){local.victorias++;visitante.derrotas++}else if(gv>gl){visitante.victorias++;local.derrotas++}else{local.empates++;visitante.empates++}
+  return{localNombre:local.nombre,visitanteNombre:visitante.nombre,gl,gv};
+}
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function generarFechas(equipos){
+  const lista=[...equipos],n=lista.length,fechas=[];
+  for(let r=0;r<n-1;r++){
+    const fecha=[];
+    for(let i=0;i<n/2;i++)fecha.push({local:lista[i],visitante:lista[n-1-i]});
+    fechas.push(fecha);lista.splice(1,0,lista.pop());
+  }
+  return fechas;
+}
+function resetStats(e){e.victorias=0;e.empates=0;e.derrotas=0;e.goles_favor=0;e.goles_contra=0}
+function puntos(e){return e.victorias*3+e.empates}
+function dg(e){return e.goles_favor-e.goles_contra}
+
+async function simular(){
+  if(simulando||equiposTorneo.length<2)return;
+  simulando=true;
+  document.getElementById('btn-sim').disabled=true;
+  let equipos=equiposTorneo.map(e=>({...e}));
+  equipos.forEach(resetStats);
+  if(equipos.length%2!==0)equipos.pop();
+  const fechas=generarFechas(equipos);
+  const logEl=document.getElementById('log-container');
+  logEl.innerHTML='';resetResults();
+
+  for(let f=0;f<fechas.length;f++){
+    document.getElementById('progress-fill').style.width=((f+1)/fechas.length*100)+'%';
+    document.getElementById('status-text').textContent=`Fecha ${f+1} de ${fechas.length}…`;
+    const div=document.createElement('div');
+    div.innerHTML=`<div class="log-fecha">══ FECHA ${f+1} ══</div>`;
+    logEl.appendChild(div);
+    await new Promise(r=>setTimeout(r,20));
+    fechas[f].forEach(p=>{
+      const r=jugarPartido(p.local,p.visitante);
+      const line=document.createElement('div');
+      line.innerHTML=`<span class="log-partido">  ${r.localNombre} </span><span class="log-resultado ${r.gl>r.gv?'log-win':''}">${r.gl} – ${r.gv}</span><span class="log-partido"> ${r.visitanteNombre}</span>`;
+      logEl.appendChild(line);
+    });
+    logEl.scrollTop=logEl.scrollHeight;
+  }
+
+  renderTabla(equipos);renderStats(equipos);
+
+  const campeon=[...equipos].sort((a,b)=>puntos(b)-puntos(a)||dg(b)-dg(a)||b.goles_favor-a.goles_favor)[0];
+  document.getElementById('champion-escudo-wrap').innerHTML=escudoSVG(campeon.nombre,56);
+  document.getElementById('champion-name').textContent=campeon.nombre;
+  document.getElementById('champion-stats').textContent=`${puntos(campeon)} pts · ${campeon.victorias}G ${campeon.empates}E ${campeon.derrotas}P · ${campeon.goles_favor} goles a favor`;
+  document.getElementById('champion-card').classList.add('show');
+
+  const fin=document.createElement('div');
+  fin.innerHTML=`<div class="log-campeon">🏆 CAMPEÓN: ${campeon.nombre} · ${puntos(campeon)} puntos</div>`;
+  logEl.appendChild(fin);logEl.scrollTop=logEl.scrollHeight;
+
+  document.getElementById('progress-fill').style.width='100%';
+  document.getElementById('status-text').textContent=`Campeón: ${campeon.nombre} · ${puntos(campeon)} pts`;
+  simulando=false;document.getElementById('btn-sim').disabled=false;
+  showTab('tabla',document.querySelector('.tab-btn'));
+}
+
+function renderTabla(equipos){
+  const sorted=[...equipos].sort((a,b)=>puntos(b)-puntos(a)||dg(b)-dg(a)||b.goles_favor-a.goles_favor);
+  const rows=sorted.map((e,i)=>{
+    const dgVal=dg(e),dgCls=dgVal>0?'dg-pos':dgVal<0?'dg-neg':'dg-zero',dgStr=(dgVal>0?'+':'')+dgVal;
+    return`<tr>
+      <td><span class="pos-num">${i+1}</span></td>
+      <td class="left"><div class="team-name-cell">${escudoSVG(e.nombre,20)}<span style="margin-left:5px;font-weight:600">${e.nombre}</span></div></td>
+      <td>${e.victorias+e.empates+e.derrotas}</td>
+      <td style="color:var(--win)">${e.victorias}</td>
+      <td style="color:var(--draw)">${e.empates}</td>
+      <td style="color:var(--loss)">${e.derrotas}</td>
+      <td class="pts-cell">${puntos(e)}</td>
+      <td>${e.goles_favor}</td><td>${e.goles_contra}</td>
+      <td class="${dgCls}">${dgStr}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tabla-content').innerHTML=`<table><thead><tr><th>#</th><th class="left">Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>Pts</th><th>GF</th><th>GC</th><th>DG</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderStats(equipos){
+  const sorted=[...equipos].sort((a,b)=>puntos(b)-puntos(a));
+  const rows=sorted.map(e=>`<tr>
+    <td class="left"><div class="team-name-cell">${escudoSVG(e.nombre,18)}<span style="margin-left:5px;font-weight:600">${e.nombre}</span></div></td>
+    <td><span class="team-type-label ${e.tipo==='profesional'?'label-pro':'label-am'}">${e.tipo==='profesional'?'PRO':'AM'}</span></td>
+    <td>${e.ataque}</td><td>${e.defensa}</td><td>${e.resistencia}</td><td>${e.extra}</td>
+    <td class="pts-cell">${puntos(e)}</td>
+  </tr>`).join('');
+  document.getElementById('stats-content').innerHTML=`<table><thead><tr><th class="left">Equipo</th><th>Tipo</th><th>ATQ</th><th>DEF</th><th>RES</th><th>EXT</th><th>Pts</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function resetResults(){
+  document.getElementById('champion-card').classList.remove('show');
+  document.getElementById('progress-fill').style.width='0%';
+  document.getElementById('tabla-content').innerHTML='<div class="empty-state"><div class="big">📊</div><p>Simulá el torneo para ver la tabla</p></div>';
+  document.getElementById('stats-content').innerHTML='<div class="empty-state"><div class="big">📈</div><p>Las estadísticas aparecerán luego de simular</p></div>';
+}
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+</script>
+</body>
+</html>
