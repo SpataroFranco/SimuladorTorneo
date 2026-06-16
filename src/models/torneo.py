@@ -9,7 +9,6 @@ class Torneo:
         self._id = id_torneo
         self._nombre = nombre
         self._equipos = []
-        self._fechas = []
         self._campeon = None
 
     @property
@@ -20,41 +19,39 @@ class Torneo:
     def get_equipos(self):
         return self._equipos
     
-    @property
-    def get_fechas(self):
-        return self._fechas
-    
+
     def agregar_equipo(self, equipo):
         self._equipos.append(equipo)
 
     #Metodo que genera las fechas del torneo
     @medir_tiempo
     def generar_fechas(self):
-
-        #mas de dos equipos
         if len(self._equipos) < 2:
             raise cantidadEquiposError()
-        #Cantidad par de equipos
+
         if len(self._equipos) % 2 != 0:
             raise cantidadEquiposError()
-        #Limpio las fechas anteriores
-        self._fechas.clear()
-        #determina cantidad de fechas
+
         equipos = self._equipos[:]
         cantidad_fechas = len(equipos) - 1
 
         for _ in range(cantidad_fechas):
             fecha = []
+
             for i in range(len(equipos) // 2):
-                #Empareja mejor vs peor
                 local = equipos[i]
                 visitante = equipos[-(i + 1)]
-                #Crea el partido
-                partido = Partido(uuid.uuid4(),local,visitante)
+
+                partido = Partido(
+                    uuid.uuid4(),
+                    local,
+                    visitante
+                )
+
                 fecha.append(partido)
-            #Agrega fecha creada a las fechas
-            self._fechas.append(fecha)
-            #Metodo "Round Robin" para distribuir y que jueguen todos contra todos
+
+            yield fecha
+
             equipos = (
                 [equipos[0]]
                 + [equipos[-1]]
@@ -76,7 +73,8 @@ class Torneo:
             )
     #Metodo que devuelve al campeon en base a los puntos, diferencia de gol y goles a favor
     def obtener_campeon(self):
-        return max(self._equipos,key=lambda e: (e.get_puntos(),e.get_diferencia_gol(),e.get_goles_favor()))
+        self._campeon = max(self._equipos,key=lambda e: (e.get_puntos(),e.get_diferencia_gol(),e.get_goles_favor()))
+        return self._campeon
     
     #Metodo que guarda la tabla de resultados en un archivo csv 
     @medir_tiempo

@@ -51,13 +51,11 @@ def main():
         eliminado = torneo.get_equipos.pop()
         print(f"Se eliminó {eliminado.get_nombre()} "
              f"para tener cantidad par de equipos.")
-    #Genera las fechas el torneo
-    torneo.generar_fechas()
     #Inicia el simulador
     simulador = Simulador()
 
     #Recorre las fechas y las juega
-    for numero_fecha, fecha in enumerate(torneo.get_fechas,start=1):
+    for numero_fecha, fecha in enumerate(torneo.generar_fechas(),start=1):
         print(f"\n========== FECHA {numero_fecha} ==========")
         #Limpia las fechas anteriores
         simulador.limpiar()
@@ -68,10 +66,14 @@ def main():
         #Muestra la tabla de puntos 
         torneo.mostrar_tabla()
 
+    campeon = torneo.obtener_campeon()
     print("\n========== CAMPEÓN ==========")
-    print(torneo.obtener_campeon())
+    print(f"Equipo: {campeon.get_nombre()}")
+    print(f"Puntos: {campeon.get_puntos()}")
+    print(f"Diferencia de gol: {campeon.get_diferencia_gol()}")
 
     torneo.guardar_tabla_csv("src/datos/tabla_final.csv")
+    print()
     print("Tabla final guardada correctamente")
 
 if __name__ == "__main__":
