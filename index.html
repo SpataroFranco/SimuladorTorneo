@@ -98,6 +98,22 @@
   ::-webkit-scrollbar{width:5px}
   ::-webkit-scrollbar-track{background:var(--surface)}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  button,.btn,.toggle-btn,.tab-btn{transition:all .25s ease}
+  button:hover,.btn:hover,.toggle-btn:hover,.tab-btn:hover{transform:scale(1.03)}
+  .panel{transition:transform .25s ease,box-shadow .25s ease}
+  .panel:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.35)}
+  .team-item{transition:background .2s ease,transform .2s ease}
+  .team-item:hover{transform:translateX(3px)}
+  tr{transition:background .2s ease}
+  tr:nth-child(1){background:rgba(227,179,65,.08)}
+  tr:nth-child(2){background:rgba(255,255,255,.03)}
+  tr:nth-child(3){background:rgba(188,140,255,.06)}
+  .champion-card.show{animation:championAppear .5s ease}
+  @keyframes championAppear{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+  table{border-radius:8px;overflow:hidden}
+  tr:hover td{background:rgba(255,255,255,.045)}
+  input[type="text"]{transition:border-color .2s ease,box-shadow .2s ease}
+  input[type="text"]:focus{box-shadow:0 0 8px rgba(57,211,83,.2)}
 </style>
 </head>
 <body>
