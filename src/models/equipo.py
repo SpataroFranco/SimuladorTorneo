@@ -2,6 +2,30 @@ from abc import ABC, abstractmethod
 from herramientas.excepciones import (ataqueError,defensaError,resistenciaError,rankingError,nombreEquipoError)
 
 class Equipo(ABC):
+    """
+    Clase abstracta que representa un equipo de fútbol
+    Define los atributos y comportamientos comunes a todos los tipos de equipos del simulador.} 
+    No puede instanciarse directamente, sino que debe heredarse e implementar el método calcular_potencia()
+    Atributos:
+        _id (str): Identificador único del equipo
+        _nombre (str): Nombre del equipo
+        _ranking (int): Ranking del equipo entre 1 y 100
+        _ataque (int): Nivel de ataque entre 0 y 100
+        _defensa (int): Nivel de defensa entre 0 y 100
+        _resistencia (int): Nivel de resistencia entre 0 y 100
+        _victorias (int): Cantidad de partidos ganados
+        _empates (int): Cantidad de partidos empatados
+        _derrotas (int): Cantidad de partidos perdidos
+        _goles_favor (int): Goles convertidos
+        _goles_contra (int): Goles recibidos
+
+    Lanza los errores:
+        nombreEquipoError: Si el nombre está vacío
+        ataqueError: Si el ataque está fuera del rango permitido
+        defensaError: Si la defensa está fuera del rango permitido
+        rankingError: Si el ranking no está entre 1 y 100
+        resistenciaError: Si la resistencia está fuera del rango permitido
+    """
     def __init__(self, id_equipo:str, nombre:str, ranking:int, ataque:int, defensa:int, resistencia:int):
         self._validar_nombre(nombre,nombreEquipoError())
         self._validar_rango(ataque,0,100,ataqueError())

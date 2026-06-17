@@ -1,8 +1,12 @@
 import time
 from functools import wraps
 
-#Metodo que de registra en un txt logs los tiempos que tarda en ejecutarse las simulaciones
 def medir_tiempo(func):
+    """
+    Metodo que de registra en un txt logs los tiempos que tarda en ejecutarse las simulaciones
+    Recibe una funcion 
+    Retorna el tiempo que tarda en ejecutarse
+    """
     @wraps(func)
     def wrapper(*args, **kwargs):
 

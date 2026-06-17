@@ -5,27 +5,52 @@ import uuid
 import csv
 
 class Torneo:
+    """
+    Clase que representa un torneo de fútbol.
+    Se encarga de administrar los equipos participantes,
+    generar las fechas del campeonato, mostrar la tabla
+    de posiciones, determinar el campeón y exportar los
+    resultados a un archivo CSV.
+    Atributos:
+        _id: Identificador único del torneo.
+        _nombre (str): Nombre del torneo.
+        _equipos (list): Lista de equipos participantes.
+        _campeon: Equipo campeón del torneo.
+    """
     def __init__(self, id_torneo, nombre):
+        """
+        Inicializa un torneo.
+        Argumentos:
+            id_torneo: Identificador del torneo.
+            nombre (str): Nombre del torneo.
+        """
         self._id = id_torneo
         self._nombre = nombre
         self._equipos = []
         self._campeon = None
 
+    #Retorna el nombre del torneo
     @property
     def get_nombre(self):
         return self._nombre
-
+    #Retorna la lista con los equipos del torneo
     @property
     def get_equipos(self):
         return self._equipos
-    
-
+    #Agrega un equipo a la lista de equipos
     def agregar_equipo(self, equipo):
         self._equipos.append(equipo)
 
     #Metodo que genera las fechas del torneo
     @medir_tiempo
     def generar_fechas(self):
+        """
+        Metodo que genera las fechas del torneo utilizando el algoritmo Round Robin (todos contra todos).
+        Cada llamada al generador devuelve una fecha compuesta por una lista de partidos.
+        Yields:
+            list[Partido]: Lista de partidos correspondientes a una fecha.
+        Lanza cantidadEquiposError() si hay menos de dos equipos o si la cantidad de equipos es impar
+        """
         if len(self._equipos) < 2:
             raise cantidadEquiposError()
 
@@ -37,7 +62,7 @@ class Torneo:
 
         for _ in range(cantidad_fechas):
             fecha = []
-
+            #Empareja al primer equipo con el ultimo, el sengundo con el anteultimo,etc
             for i in range(len(equipos) // 2):
                 local = equipos[i]
                 visitante = equipos[-(i + 1)]
@@ -51,7 +76,7 @@ class Torneo:
                 fecha.append(partido)
 
             yield fecha
-
+            #Rota los equipos manteniendo fijo el primero
             equipos = (
                 [equipos[0]]
                 + [equipos[-1]]
@@ -71,7 +96,7 @@ class Torneo:
                 f"{equipo.get_puntos():>3} | "
                 f"{equipo.get_diferencia_gol():>3}"
             )
-    #Metodo que devuelve al campeon en base a los puntos, diferencia de gol y goles a favor
+    #Metodo que devuelve al campeon en base a los puntos, diferencia de gol o goles a favor
     def obtener_campeon(self):
         self._campeon = max(self._equipos,key=lambda e: (e.get_puntos(),e.get_diferencia_gol(),e.get_goles_favor()))
         return self._campeon

@@ -18,7 +18,19 @@ if not API_KEY:
 
 
 def main():
-
+    """
+    Función principal del programa.
+    Flujo de ejecución:
+        1. Obtiene los datos de los equipos desde API-Football.
+        2. Crea el torneo.
+        3. Genera equipos profesionales y amateurs.
+        4. Agrega los equipos al torneo.
+        5. Ajusta la cantidad de equipos para que sea par.
+        6. Simula cada fecha del campeonato.
+        7. Muestra resultados y tabla de posiciones.
+        8. Determina el campeón.
+        9. Exporta la tabla final a un archivo CSV.
+    """
     api = ApiFootball(API_KEY)
 
     #Recojo los datos de la liga argentina temporada 2022
