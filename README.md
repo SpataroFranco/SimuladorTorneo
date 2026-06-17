@@ -262,7 +262,7 @@ API_FOOTBALL_KEY=TU_API_KEY
 ```
 ---
 # Demostración online
-[https://nicholasaira.github.io/SimuladorTorneo/](https://spatarofranco.github.io/SimuladorTorneo/)
+[https://spatarofranco.github.io/SimuladorTorneo/]
 ---
 
 ## Ejecución
