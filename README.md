@@ -1,5 +1,15 @@
 # Simulador de Torneo de Fútbol Concurrente
 
+Trabajo Práctico Final Integrador desarrollado para la materia **Laboratorio de Programación II** de la **Universidad Nacional de San Martín (UNSAM)**.
+
+---
+
+## Integrantes del Grupo
+
+- Nicholas Aira  
+- Valentín Mokorel  
+- Franco Spataro
+
 ## Descripción General
 
 Este proyecto consiste en un simulador de torneos de fútbol desarrollado en Python como **Trabajo Práctico Final Integrador de Laboratorio de Programación II**.
@@ -299,12 +309,3 @@ python src/main.py
 
 ---
 
-## Autores
-
-### Aira Nicholas, Mokorel Valentin, Spataro Franco
-
-## - Trabajo Práctico Final Integrador
-
-## - Laboratorio de Programacíon II
-
-## - Universidad Nacional de San Martín
