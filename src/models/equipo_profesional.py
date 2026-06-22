@@ -61,17 +61,22 @@ class EquipoProfesional(Equipo):
 
         return potencia_base * factor
     
-    #
     def entrenar(self):
         """
         Metodo para aumentar ataque,defensa y nivel de entrenamiento (el maximo es 100)
         Ademas:
-            - Ataque: +2 puntos
-            - Defensa: +1 punto
-            - Nivel de entrenamiento: +1 punto
+            - Ataque: suma como maximo 2 puntos
+            - Defensa: suma como maximo 2 puntos
+            - Nivel de entrenamiento: suma como maximo 2 puntos
+            - resistencia: el entrenamiento consume entre 1 y 3 de resistencia
         """
-        self._ataque += 2
-        self._defensa += 1
-        self._nivel_entrenamiento += 1
-        if (self._nivel_entrenamiento > 100):
-            self._nivel_entrenamiento = 100
+        self._ataque = min(100, self._ataque + random.randint(0, 2))
+        self._defensa = min(100, self._defensa + random.randint(0, 2))
+        self._nivel_entrenamiento = min(100,self._nivel_entrenamiento + random.randint(0, 2))
+        self._resistencia = max(0,self._resistencia - random.randint(1, 3))
+
+    def recuperar_fisico(self):
+        """
+        Recupera parte de la resistencia del equipo profesional.
+        """
+        self._resistencia = min(100,self._resistencia + random.randint(4, 8))

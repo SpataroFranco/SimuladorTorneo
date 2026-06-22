@@ -59,6 +59,11 @@ class Equipo(ABC):
     def calcular_potencia(self):
         pass
 
+    #Metodo para recuperar el fisico de un equipo
+    @abstractmethod
+    def recuperar_fisico(self):
+        pass
+
     #Metodo para setear el ataque
     def setAtaque(self,ataque):
         self._validar_rango(ataque,0,100,ataqueError())

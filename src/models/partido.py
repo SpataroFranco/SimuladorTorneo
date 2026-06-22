@@ -1,3 +1,5 @@
+from models.equipo_profesional import EquipoProfesional
+from models.equipo_amateur import EquipoAmateur
 import random
 
 class Partido:
@@ -32,6 +34,20 @@ class Partido:
         5. Actualiza las estadísticas de ambos equipos
         6. Determina si hubo victoria, derrota o empate
         """
+
+        # Equipo local: entrena y recupera fisico pre partido si es profesional, si es amateur recupera solo fisico
+        if isinstance(self._local, EquipoProfesional):
+            self._local.entrenar()
+            self._local.recuperar_fisico()
+        elif isinstance(self._local, EquipoAmateur):
+            self._local.recuperar_fisico()
+
+        # Equipo visitante: entrena y recupera fisico pre partido si es profesional, si es amateur recupera solo fisico
+        if isinstance(self._visitante, EquipoProfesional):
+            self._visitante.entrenar()
+            self._visitante.recuperar_fisico()
+        elif isinstance(self._visitante, EquipoAmateur):
+            self._visitante.recuperar_fisico()
 
         #Calcula la potencia de cada equipo
         potencia_local = self._local.calcular_potencia()
@@ -80,6 +96,13 @@ class Partido:
         else:
             self._local.guardar_empate()
             self._visitante.guardar_empate()
+
+        #Al finalizar el partido los equipos amateur tienen un desgaste
+        if isinstance(self._local, EquipoAmateur):
+            self._local.desgastar()
+
+        if isinstance(self._visitante, EquipoAmateur):
+            self._visitante.desgastar()
 
     def mostrar_resultado(self):
         print(

@@ -44,27 +44,31 @@ class EquipoAmateur(Equipo):
         """
         Metodo que calcula la potencia en base a sus atributos multiplicados por un peso y un factor suerte que afecta entre 20% por arriba o por abajo de su potencia
         Pesos utilizados:
-            - Ataque: 25%
-            - Defensa: 20%
-            - Resistencia: 20%
-            - Estado físico: 35%
+            - Ataque: 30%
+            - Defensa: 25%
+            - Resistencia: 25%
+            - Estado físico: 20%
         Retorna la potencia final del equipo (float)       
         """
         potencia_base = (
-            self._ataque * 0.25 +
-            self._defensa * 0.20 +
-            self._resistencia * 0.20 +
-            self._estado_fisico * 0.35
+            self._ataque * 0.30 +
+            self._defensa * 0.25 +
+            self._resistencia * 0.25 +
+            self._estado_fisico * 0.20
         )
 
-        factor = random.uniform(0.8, 1.2)
+        factor = random.uniform(0.9, 1.05)
 
         return potencia_base * factor
     
     def recuperar_fisico(self):
         """
-        Metodo que recupera el estado físico del equipo en 10, el estado maximo es 100
+        Metodo que recupera el estado físico del equipo entre 10 y 20, el estado maximo es 100
         """
-        self._estado_fisico += 10
-        if (self._estado_fisico>100):
-            self._estado_fisico=100
+        self._estado_fisico = min(100,self._estado_fisico+random.randint(10, 20))
+
+    def desgastar(self):
+        """
+        Metodo que reduce el estado físico después de disputar un partido.
+        """
+        self._estado_fisico = max(0,self._estado_fisico - random.randint(8, 15))
